@@ -6,6 +6,9 @@ from mpu6050 import mpu6050
 
 GPIO.setmode(GPIO.BOARD)
 
+inferiorThreshold = 4.5     #Limite inferior de distancia de um obstaculo
+superiorThreshold = 6.5     #Limite superior de distancia de um obstaculo
+
 
 Ultra1C = Ultrassonic(31, 33, 1)   #Ultrasonico Centro   (Trigger Pin, Echo pin, FLag)
 Ultra2E = Ultrassonic(35, 37, 2)   #Ultrasonico Esquerda (Trigger Pin, Echo Pin, FLag)
@@ -17,17 +20,25 @@ dcMotorRight = MotorDC(11, 40, 15)  #Motor DC Direita  (A, B, PWM)
 
 mpuSensor = mpu6050(0x68)
 
+
 if __name__ == '__main__':
     try:
         while True:
-            #Ultra1C.showDistance()
-            #Ultra2E.showDistance()
-            #Ultra3D.showDistance()
-            accelData = mpuSensor.get_accel_data()
-            print("X: ", accelData['x'])
-            print("Y: ", accelData['y'])
-            print("Z: ", accelData['z'])
-            sleep(1)
+            while (Ultra1C.getDistance() and Ultra2E.getDistance() and Ultra3D.getDistance()) >= superiorThreshold:     #GO FORWARD IF THE DISNTANCES READ FROM THE ULTRASSONIC SENSORS ARE GREATER THAN 6.5CM
+                dcMotorLeft.moveForward()
+                dcMotorRight.moveForward()
+            if (Ultra1C.getDistance() or Ultra2E.getDistance() or Ultra3D.getDistance()) <= inferiorThreshold:
+                while (Ultra1C.getDistance() or Ultra2E.getDistance() or Ultra3D.getDistance()) <= inferiorThreshold:
+                    if Ultra1C.getDistance() <= inferiorThreshold:      #GO BACKWARDS if the distance of the CENTER ultrassonic is inferior or equal to 4.5cm
+                        dcMotorLeft.moveBackwards()
+                        dcMotorRight.moveBackwards()
+                    if Ultra3D.getDistance() <= inferiorThreshold:      #GO LEFT if the distance of the RIGHT ultrassonic is inferior or equal to 4.5cm
+                        dcMotorLeft.moveBackwards()
+                        dcMotorRight.moveForward()
+                    if Ultra2E.getDistance() <= inferiorThreshold:      #GO RIGHT if the distance of the LEFT ultrassonic is inferior or equal to 4.5cm
+                        dcMotorLeft.moveForward()
+                        dcMotorRight.moveBackwards()
+
     except KeyboardInterrupt:
         print ("Stopping")
         GPIO.cleanup()

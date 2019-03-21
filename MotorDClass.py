@@ -16,14 +16,14 @@ class MotorDC():
     def moveForward(self):
         GPIO.output(self.pinA, True)
         GPIO.output(self.pinB, False)
-        self.pwm.ChangeDutyCycle(100)
+        self.pwm.ChangeDutyCycle(50)
         GPIO.output(self.pinPWM, True)
         sleep(0.030)
 
     def moveBackwards(self):
         GPIO.output(self.pinA, False)
         GPIO.output(self.pinB, True)
-        self.pwm.ChangeDutyCycle(100)
+        self.pwm.ChangeDutyCycle(50)
         GPIO.output(self.pinPWM, True)
         sleep(0.030)
 
