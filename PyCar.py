@@ -7,9 +7,9 @@ from mpu6050 import mpu6050
 GPIO.setmode(GPIO.BOARD)
 
 
-Ultra1C = Ultrassonic(31, 33)   #Ultrasonico Centro   (Trigger Pin, Echo pin)
-Ultra2E = Ultrassonic(35, 37)   #Ultrasonico Esquerda (Trigger Pin, Echo Pin)
-Ultra3D = Ultrassonic(38, 36)   #Ultrasonico Direita  (Trigger Pin, Echo Pin)
+Ultra1C = Ultrassonic(31, 33, 1)   #Ultrasonico Centro   (Trigger Pin, Echo pin, FLag)
+Ultra2E = Ultrassonic(35, 37, 2)   #Ultrasonico Esquerda (Trigger Pin, Echo Pin, FLag)
+Ultra3D = Ultrassonic(38, 36, 3)   #Ultrasonico Direita  (Trigger Pin, Echo Pin, Flag)
 
 
 dcMotorLeft = MotorDC(22, 16, 18)   #Motor DC Esquerda (A, B, PWM)
