@@ -23,9 +23,9 @@ if __name__ == '__main__':
         #Ultra2E.showDistance()
         #Ultra3D.showDistance()
         accelData = mpuSensor.get_accel_data()
-        print("X: ", accelData['X'])
-        print("Y: ", accelData['Y'])
-        print("Z: ", accelData['Z'])
+        print("X: ", accelData['x'])
+        print("Y: ", accelData['y'])
+        print("Z: ", accelData['z'])
         sleep(1)
     except KeyboardInterrupt:
         print ("Stopping")
