@@ -6,8 +6,8 @@ from mpu6050 import mpu6050
 
 GPIO.setmode(GPIO.BOARD)
 
-inferiorThreshold = 4.5     #Limite inferior de distancia de um obstaculo
-superiorThreshold = 6.5     #Limite superior de distancia de um obstaculo
+inferiorThreshold = 5.5     #Limite inferior de distancia de um obstaculo
+superiorThreshold = 8.5     #Limite superior de distancia de um obstaculo
 
 
 Ultra1C = Ultrassonic(31, 33, 1)   #Ultrasonico Centro   (Trigger Pin, Echo pin, FLag)
