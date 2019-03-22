@@ -21,23 +21,38 @@ dcMotorRight = MotorDC(11, 40, 15)  #Motor DC Direita  (A, B, PWM)
 mpuSensor = mpu6050(0x68)
 
 
+def debugUltrasonic():
+    Ultra1C.showDistance()
+    Ultra2E.showDistance()
+    Ultra3D.showDistance()
+    sleep(1)
+
+
 if __name__ == '__main__':
     try:
         while True:
             while (Ultra1C.getDistance() and Ultra2E.getDistance() and Ultra3D.getDistance()) >= superiorThreshold:     #GO FORWARD IF THE DISNTANCES READ FROM THE ULTRASSONIC SENSORS ARE GREATER THAN 6.5CM
                 dcMotorLeft.moveForward()
                 dcMotorRight.moveForward()
+                print "Forward"
+                debugUltrasonic()
             if (Ultra1C.getDistance() or Ultra2E.getDistance() or Ultra3D.getDistance()) <= inferiorThreshold:
                 while (Ultra1C.getDistance() or Ultra2E.getDistance() or Ultra3D.getDistance()) <= inferiorThreshold:
                     if Ultra1C.getDistance() <= inferiorThreshold:      #GO BACKWARDS if the distance of the CENTER ultrassonic is inferior or equal to 4.5cm
                         dcMotorLeft.moveBackwards()
                         dcMotorRight.moveBackwards()
+                        print "Backwards"
+                        debugUltrasonic()
                     if Ultra3D.getDistance() <= inferiorThreshold:      #GO LEFT if the distance of the RIGHT ultrassonic is inferior or equal to 4.5cm
                         dcMotorLeft.moveBackwards()
                         dcMotorRight.moveForward()
+                        print "Left"
+                        debugUltrasonic()
                     if Ultra2E.getDistance() <= inferiorThreshold:      #GO RIGHT if the distance of the LEFT ultrassonic is inferior or equal to 4.5cm
                         dcMotorLeft.moveForward()
                         dcMotorRight.moveBackwards()
+                        print "Right"
+                        debugUltrasonic()
 
     except KeyboardInterrupt:
         print ("Stopping")
