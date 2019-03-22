@@ -25,7 +25,7 @@ def debugUltrasonic():
     Ultra1C.showDistance()
     Ultra2E.showDistance()
     Ultra3D.showDistance()
-    sleep(0.1)
+    sleep(0.03)
 
 if __name__ == '__main__':
     try:
@@ -33,7 +33,7 @@ if __name__ == '__main__':
             while (Ultra1C.getDistance() >= superiorThreshold and Ultra2E.getDistance() >= superiorThreshold and Ultra3D.getDistance()) >= superiorThreshold:     #GO FORWARD IF THE DISNTANCES READ FROM THE ULTRASSONIC SENSORS ARE GREATER THAN 6.5CM
                 dcMotorLeft.moveForward()
                 dcMotorRight.moveForward()
-                sleep(0.5)
+                sleep(0.03)
                 print "Forward"
                 debugUltrasonic()
             if (Ultra1C.getDistance() <= inferiorThreshold or Ultra2E.getDistance() <= inferiorThreshold or Ultra3D.getDistance()) <= inferiorThreshold:
@@ -42,24 +42,24 @@ if __name__ == '__main__':
                         if Ultra1C.getDistance() <= inferiorThreshold:
                             dcMotorLeft.moveBackwards()
                             dcMotorRight.moveBackwards()
-                            sleep(0.1)
+                            sleep(0.03)
                             print "Backwards, then Left"
                             debugUltrasonic()
                         dcMotorLeft.moveBackwards()
                         dcMotorRight.moveForward()
-                        sleep(0.1)
+                        sleep(0.03)
                         print "Left"
                         debugUltrasonic()
                     while Ultra1C.getDistance() <= inferiorThreshold or Ultra2E.getDistance() <= inferiorThreshold:      #GO RIGHT if the distance of the LEFT ultrassonic is inferior or equal to 4.5cm
                         if Ultra1C.getDistance() <= inferiorThreshold:
                             dcMotorLeft.moveBackwards()
                             dcMotorRight.moveBackwards()
-                            sleep(0.1)
+                            sleep(0.03)
                             print "Backwards, then Right"
                             debugUltrasonic()
                         dcMotorLeft.moveForward()
                         dcMotorRight.moveBackwards()
-                        sleep(0.1)
+                        sleep(0.03)
                         print "Right"
                         debugUltrasonic()
 
