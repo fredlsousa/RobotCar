@@ -38,8 +38,8 @@ if __name__ == '__main__':
                 debugUltrasonic()
             if (Ultra1C.getDistance() <= inferiorThreshold or Ultra2E.getDistance() <= inferiorThreshold or Ultra3D.getDistance()) <= inferiorThreshold:
                 while (Ultra1C.getDistance() <= inferiorThreshold or Ultra2E.getDistance() <= inferiorThreshold or Ultra3D.getDistance()) <= inferiorThreshold:
-                    if Ultra1C.getDistance() <= inferiorThreshold or Ultra3D.getDistance() <= inferiorThreshold:      #GO LEFT if the distance of the RIGHT ultrassonic is inferior or equal to 4.5cm
-                        while Ultra1C.getDistance() <= inferiorThreshold:
+                    while Ultra1C.getDistance() <= inferiorThreshold or Ultra3D.getDistance() <= inferiorThreshold:      #GO LEFT if the distance of the RIGHT ultrassonic is inferior or equal to 4.5cm
+                        if Ultra1C.getDistance() <= inferiorThreshold:
                             dcMotorLeft.moveBackwards()
                             dcMotorRight.moveBackwards()
                             sleep(0.1)
@@ -50,8 +50,8 @@ if __name__ == '__main__':
                         sleep(0.1)
                         print "Left"
                         debugUltrasonic()
-                    if Ultra1C.getDistance() <= inferiorThreshold or Ultra2E.getDistance() <= inferiorThreshold:      #GO RIGHT if the distance of the LEFT ultrassonic is inferior or equal to 4.5cm
-                        while Ultra1C.getDistance() <= inferiorThreshold:
+                    while Ultra1C.getDistance() <= inferiorThreshold or Ultra2E.getDistance() <= inferiorThreshold:      #GO RIGHT if the distance of the LEFT ultrassonic is inferior or equal to 4.5cm
+                        if Ultra1C.getDistance() <= inferiorThreshold:
                             dcMotorLeft.moveBackwards()
                             dcMotorRight.moveBackwards()
                             sleep(0.1)
