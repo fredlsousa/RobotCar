@@ -28,6 +28,7 @@ def debugUltrasonic():
     sleep(0.1)
 
 #if __name__ == '__main__':
+#Tentar basear o movimento no sensor da frente e depois nos sensores dos lados
 try:
     while True:
         while (Ultra1C.getDistance() >= superiorThreshold and Ultra2E.getDistance() >= superiorThreshold and Ultra3D.getDistance()) >= superiorThreshold:     #GO FORWARD IF THE DISNTANCES READ FROM THE ULTRASSONIC SENSORS ARE GREATER THAN 6.5CM
@@ -37,7 +38,6 @@ try:
             print "Forward"
             debugUltrasonic()
         if (Ultra1C.getDistance() <= inferiorThreshold or Ultra2E.getDistance() <= inferiorThreshold or Ultra3D.getDistance()) <= inferiorThreshold:
-            while (Ultra1C.getDistance() <= inferiorThreshold or Ultra2E.getDistance() <= inferiorThreshold or Ultra3D.getDistance()) <= inferiorThreshold:
                 while Ultra1C.getDistance() <= inferiorThreshold or Ultra3D.getDistance() <= inferiorThreshold:      #GO LEFT if the distance of the RIGHT ultrassonic is inferior or equal to 4.5cm
                     if Ultra1C.getDistance() <= inferiorThreshold:
                         dcMotorLeft.moveBackwards()
