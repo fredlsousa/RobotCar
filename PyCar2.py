@@ -28,30 +28,30 @@ def debugUltrasonic():
 
 try:
     while True:
-        while Ultra1C.getDistance() >= threshold and Ultra2E.getDistance() >= threshold and Ultra3D.getDistance() >= threshold:
+        while Ultra1C.getDistance() >= threshold:
             dcMotorLeft.moveForward()
             dcMotorRight.moveForward()
-            sleep(0.3)
+            sleep(0.1)
             print "Forward"
             debugUltrasonic()
         while Ultra1C.getDistance() <= threshold:
             dcMotorLeft.moveBackwards()
             dcMotorRight.moveBackwards()
-            sleep(0.3)
+            sleep(0.2)
             print "Backwards"
             debugUltrasonic()
-            if Ultra3D.getDistance() <= threshold:
-                dcMotorLeft.moveForward()
-                dcMotorRight.moveBackwards()
-                sleep(0.3)
-                print "Left"
-                debugUltrasonic()
-            elif Ultra2E.getDistance() <= threshold:
+            dcMotorLeft.moveForward()
+            dcMotorRight.moveBackwards()
+            sleep(0.3)
+            print "Left"
+            debugUltrasonic()
+            if Ultra1C.getDistance() <= threshold:
                 dcMotorLeft.moveBackwards()
                 dcMotorRight.moveForward()
                 sleep(0.3)
                 print "Right"
                 debugUltrasonic()
+
 
 except KeyboardInterrupt:
     print ("Stopping")
