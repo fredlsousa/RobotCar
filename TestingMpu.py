@@ -1,7 +1,6 @@
 import RPi.GPIO as GPIO
 from time import sleep
 from mpu6050 import mpu6050
-import integration as Integ
 
 GPIO.setmode(GPIO.BOARD)
 
