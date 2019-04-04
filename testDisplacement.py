@@ -11,12 +11,15 @@ mpuSensor = mpu6050(0x68)
 if __name__ == '__main__':
     try:
         time1 = []
+        accelerationY = []
         time1.append(time.time())
-        accelData = mpuSensor.get_accel_data()
+        for i in range(0, 3):
+            accelData = mpuSensor.get_accel_data()
+            accelerationY.append(accelData['y'])
         time1.append(time.time())
         deltaT = calc_deltat(time1)
-        velocity = integration_trapeze(accelData['x'], accelData['y'], accelData['z'], deltaT)
-        print "Velocity = ", velocity
+        velocity_Y = integration_trapeze(0, 3, accelerationY, deltaT)
+        print "Velocity = ", velocity_Y
         time.sleep(0.5)
     except KeyboardInterrupt:
         print ("Stopping")
