@@ -28,12 +28,13 @@ if __name__ == '__main__':
             time1.append(time.time())
             for i in range(0, 4):
                 velocity_Y = getVelocity_Y()
+                print ("debug %f \n" %(velocity_Y))
                 vListY.append(velocity_Y)
             time1.append(time.time())
             deltaT = calc_deltat(time1)
             displacementY = integration_trapeze(0, 3, vListY, deltaT)
             print("Velocity\t Displacement\t Time\n")
-            print("%f\t %f\t %f\n") % vListY[3], displacementY, deltaT
+            print("%f\t %f\t %f\n" % (vListY[3], displacementY, deltaT))
             time.sleep(0.5)
     except KeyboardInterrupt:
         print ("Stopping")
