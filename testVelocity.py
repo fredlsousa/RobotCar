@@ -10,6 +10,7 @@ GPIO.setmode(GPIO.BOARD)
 mpuSensor = mpu6050(0x68)
 mpuSensor.set_accel_range(0x18)
 
+
 def integrate(ac1, ac2, deltaT):
     vel = (ac2+ac1)/2
     vel *= deltaT
@@ -17,7 +18,6 @@ def integrate(ac1, ac2, deltaT):
 
 
 def graphicView(listX, listY, i):
-    #plt.plot(listX, listY)
     fig, ax = plt.subplots()
     ax.plot(listX, listY)
     ax.set(xlabel='time(s)', ylabel='Moving Average(m/s2)', title='Variation through time')
