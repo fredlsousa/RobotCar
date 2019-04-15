@@ -27,7 +27,7 @@ def graphicView(listX, listY, i):
 
 
 if __name__ == '__main__':
-    movingAverageView = []
+    #movingAverageView = []
     timeList = []
     mvView = []
     try:
