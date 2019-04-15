@@ -27,23 +27,24 @@ def graphicView(listX, listY, i):
 
 
 if __name__ == '__main__':
+
     #movingAverageView = []
     timeList = []
     mvView = []
     try:
         elapsed_time = 0
-        averageList = [0, 0, 0, 0, 0, 0, 0, 0]
-        movingAverage = 0
+        #averageList = [0, 0, 0, 0, 0, 0, 0, 0]
+        #movingAverage = 0
         ltime = time.perf_counter()
         laccelerationY = 0
         velocity_Y = 0
 
         while True:
             mv = 0
-            averageList.pop()
+            #averageList.pop()
             data = mpuSensor.get_accel_data()
             element = data['y']
-            averageList.insert(0, element)
+            #averageList.insert(0, element)
             atime = time.perf_counter()
             deltaT = atime-ltime
             elapsed_time += deltaT
@@ -71,9 +72,12 @@ if __name__ == '__main__':
             mvView.append(mv)
 
             ltime = atime
-            print("Size: %d\n" % (len(averageList)))
-            print ("Velocity\t Acceleration\t Moving Average\t NTimes\t Time\n")
-            print ("%f cm/s\t %f cm/s2\t %f m/s2\t  %f\t %f\n" % (velocity_Y*100, (accelerationY)*100, movingAverage, mv, elapsed_time))
+            #print("Size: %d\n" % (len(averageList)))
+            #print ("Velocity\t Acceleration\t Moving Average\t NTimes\t Time\n")
+            #print ("%f cm/s\t %f cm/s2\t %f m/s2\t  %f\t %f\n" % (velocity_Y*100, (accelerationY)*100, movingAverage, mv, elapsed_time))
+            print ("Velocity\t Acceleration\t NTimes\t Time\n")
+            print ("%f cm/s\t %f cm/s2\t %f m/s2\t %f\n" % (
+            velocity_Y * 100, (accelerationY) * 100, mv, elapsed_time))
             time.sleep(0.1)
 
 
