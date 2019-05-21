@@ -4,7 +4,8 @@ from mpu6050 import mpu6050
 
 GPIO.setmode(GPIO.BOARD)
 
-mpuSensor = mpu6050(0x68)
+#mpuSensor = mpu6050(0x68)
+mpuSensor = mpu6050(0x1D)
 
 if __name__ == '__main__':
     try:
