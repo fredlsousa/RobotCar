@@ -19,8 +19,10 @@ clkLastStateL = GPIO.input(clkL)
 RightSpin = 0
 LeftSpin = 0
 pi = 3.14159265
-radius = 3.15
-circ = 2 * (pi * radius) / 30
+radius = 6.65/2               #3.15 other tires - 6.3 diameter
+circ = 2 * (pi * radius) / 20
+
+
 
 try:
     while True:
@@ -31,6 +33,8 @@ try:
         if clkStateR != clkLastStateR:
             if dtStateR != clkStateR:
                 counterR -= 1
+                disp = circ * counterR / 2
+                print "Right Displacement = " + str(disp) + " cm"
                 # if counterR == -20:
                 #    RightSpin -=1
                 #    counterR = 0
@@ -48,7 +52,7 @@ try:
         if clkStateL != clkLastStateL:
             if dtStateL != clkStateL:
                 counterL += 1
-                disp = circ * counterR
+                disp = circ * counterL
                 print "Left Displacement = " + str(disp) + " cm"
                 # if counterL == 20:
                 #    LeftSpin += 1
@@ -57,6 +61,8 @@ try:
 
             else:
                 counterL -= 1
+                disp = circ * counterL / 2
+                print "Left Displacement = " + str(disp) + " cm"
                 # if counterL == -20:
                 #    LeftSpin -= 1
                 #    counterL = 0
