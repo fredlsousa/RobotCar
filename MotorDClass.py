@@ -10,22 +10,22 @@ class MotorDC():
         GPIO.setup(self.pinA, GPIO.OUT)
         GPIO.setup(self.pinB, GPIO.OUT)
         GPIO.setup(self.pinPWM, GPIO.OUT)
-        self.pwm = GPIO.PWM(self.pinPWM, 30)
         self.pwmPower = pwmPower
+        self.pwm = GPIO.PWM(self.pinPWM, self.pwmPower)
 
     def moveForward(self):
         GPIO.output(self.pinA, True)
         GPIO.output(self.pinB, False)
         self.pwm.start(self.pwmPower)
         GPIO.output(self.pinPWM, True)
-        sleep(0.030)
+        sleep(0.001)
 
     def moveBackwards(self):
         GPIO.output(self.pinA, False)
         GPIO.output(self.pinB, True)
         self.pwm.start(self.pwmPower)
         GPIO.output(self.pinPWM, True)
-        sleep(0.030)
+        sleep(0.001)
 
     def stop(self):
         GPIO.output(self.pinPWM, False)

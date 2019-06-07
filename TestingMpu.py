@@ -11,7 +11,7 @@ if __name__ == '__main__':
     try:
         while True:
             sensorRage = mpuSensor.read_accel_range()
-            print "Accel range = ", sensorRage
+            print ("Accel range = ", sensorRage)
             accelData = mpuSensor.get_accel_data()
             print("X: ", accelData['x'])
             print("Y: ", accelData['y'])
