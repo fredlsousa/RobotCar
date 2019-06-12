@@ -30,3 +30,4 @@ class MotorDC():
     def stop(self):
         GPIO.output(self.pinPWM, False)
         self.pwm.stop()
+

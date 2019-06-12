@@ -1,5 +1,5 @@
 import time
-from utils import calc_deltat
+from Tests.utils import calc_deltat
 
 #  To use the function calc_deltat:
 #  It expects a list to calculate the nth discrete difference beetween the values within the list

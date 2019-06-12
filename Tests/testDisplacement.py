@@ -1,8 +1,8 @@
-from integration import *
+from Tests.integration import *
 import RPi.GPIO as GPIO
 import time
 from mpu6050 import mpu6050
-from utils import *
+from Tests.utils import *
 
 GPIO.setmode(GPIO.BOARD)
 
