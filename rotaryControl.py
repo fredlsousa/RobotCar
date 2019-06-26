@@ -3,9 +3,13 @@ from time import sleep
 import time
 import matplotlib.pyplot as plt
 import numpy as np
+from threading import RLock
 
-leftSpeed = 0
 rightSpeed = 0
+leftSpeed = 0
+rightDisplacement = 0
+leftDisplacement = 0
+
 
 def graphicView(listX, listY, i):
     fig, ax = plt.subplots()
@@ -17,16 +21,17 @@ def graphicView(listX, listY, i):
 def calc_velocity(dist_cm, deltaT):
     return (dist_cm / deltaT)
 
-def controlHandler():
-    global rightSpeed
-    global leftSpeed
 
-    #inicia mutex
+def controlHandler(mutex):
+
+    mutex.acquire()
     rs = rightSpeed
     ls = leftSpeed
-    #fim mutex
+    rd = rightDisplacement
+    ld = leftDisplacement
+    mutex.release()
 
-    return rs, ls
+    return rs, ls, rd, ld
 
 
 
@@ -90,14 +95,15 @@ def calculateDisplacement():
 
             deltaR = (dispListR[-1] - dispListR[-2])
             velR = calc_velocity(deltaR, sampling_time)
+            velR = velR/10
             speedRightList = np.append(speedRightList,velR)
 
             sub = speedRightList[-100:-1]
             m = np.mean(sub, dtype=np.float32)
             m_speedRightList = np.append(m_speedRightList,m)
 
-            print("DisplacementR\t Speed\t\t Time\n")
-            print("%f cm\t %f cm/s\t %f s\n" % (dispRNow, velR, timeListR[-1]))
+            #print("DisplacementR\t Speed\t\t Time\n")
+            #print("%f cm\t %f cm/s\t %f s\n" % (dispRNow, velR, timeListR[-1]))
             clkLastStateR = clkStateR
 
             if clkStateL != clkLastStateL:
@@ -113,30 +119,41 @@ def calculateDisplacement():
 
             deltaL = (dispListL[-1] - dispListL[-2])
             velL = calc_velocity(deltaL, sampling_time)
+            velL = velL/10
             speedLeftList = np.append(speedLeftList,velL)
 
             sub = speedLeftList[-100:-1]
             m = np.mean(sub, dtype=np.float32)
             m_speedLeftList = np.append(m_speedLeftList,m)
 
-            print("DisplacementL\t Speed\t\t Time\n")
-            print("%f cm\t %f cm/s\t %f s\n" % (dispLNow, velL, timeListL[-1]))
+            #print("DisplacementL\t Speed\t\t Time\n")
+            #print("%f cm\t %f cm/s\t %f s\n" % (dispLNow, velL, timeListL[-1]))
 
 
             clkLastStateL = clkStateL
             ltime = atime
             sleep(sampling_time)
-            return dispLNow, dispRNow, velL, velR
+
+            #print("THREAD %f %f %f %f" %(dispLNow, dispLNow, velL, velR))
+            #with mutex:
+
+
+            rightDisplacement = dispRNow
+            leftDisplacement = dispLNow
+            rightSpeed = velR
+            leftSpeed = velL
+
+            sleep(0.005)
 
     except KeyboardInterrupt:
         GPIO.cleanup()
         print()
         print((m_speedRightList))
         print((m_speedLeftList))
-        graphicView(timeListL, dispListL, "Left")
-        graphicView(timeListR, dispListR, "Right")
-        graphicView(timeListR, speedRightList, "Right Speed")
-        graphicView(timeListL, speedLeftList, "Left Speed")
-        graphicView(timeListR, m_speedRightList, "MM Right Speed")
-        graphicView(timeListL, m_speedLeftList, "MM Left Speed")
+        #graphicView(timeListL, dispListL, "Left")
+        #graphicView(timeListR, dispListR, "Right")
+        #graphicView(timeListR, speedRightList, "Right Speed")
+        #graphicView(timeListL, speedLeftList, "Left Speed")
+        #graphicView(timeListR, m_speedRightList, "MM Right Speed")
+        #graphicView(timeListL, m_speedLeftList, "MM Left Speed")
         print ("Stopped")

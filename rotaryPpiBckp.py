@@ -9,7 +9,6 @@ dtR = 31
 clkL = 37
 dtL = 35
 
-
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(clkR, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(dtR, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
@@ -25,8 +24,6 @@ LeftSpin = 0
 pi = 3.14159265
 radius = 6.65/2               #3.15 other tires - 6.3 diameter
 ppi = 20 / (2 * (pi * radius))
-
-
 
 
 def graphicView(listX, listY, i):
@@ -80,6 +77,7 @@ if __name__ == '__main__':
 
             deltaR = (dispListR[-1] - dispListR[-2])
             velR = calc_velocity(deltaR, sampling_time)
+            velR = velR/10
             speedRightList = np.append(speedRightList,velR)
 
             sub = speedRightList[-100:-1]
@@ -103,6 +101,7 @@ if __name__ == '__main__':
 
             deltaL = (dispListL[-1] - dispListL[-2])
             velL = calc_velocity(deltaL, sampling_time)
+            velL = velL/10
             speedLeftList = np.append(speedLeftList,velL)
 
             sub = speedLeftList[-100:-1]

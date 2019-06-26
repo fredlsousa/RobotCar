@@ -2,7 +2,6 @@ from socket import *
 from MotorDClass import *
 import time
 
-
 dcMotorLeft = MotorDC(22, 16, 18, 100)   #Motor DC Esquerda (A, B, PWM, pwmPower)
 dcMotorRight = MotorDC(11, 40, 15, 100)  #Motor DC Direita  (A, B, PWM, PwmPower)
 
@@ -16,6 +15,7 @@ host = "192.168.0.159"    #Server to receive from data-glove
 port = 5151             #Port to receive from data-glove
 
 s.bind((host, port))    #binding the host and port to socket
+
 
 
 try:
