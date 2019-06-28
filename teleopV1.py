@@ -284,7 +284,7 @@ if __name__ == '__main__':
                 dcMotorLeft.stop()
                 dcMotorRight.stop()
 
-            print (lsensor, rsensor, DCL,DCR)
+            print (lsensor, rsensor, DCL, DCR, sensorDist)
             sleep(0.01)
 
 
