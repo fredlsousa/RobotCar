@@ -166,9 +166,6 @@ if __name__ == '__main__':
             sensorDist = distance
             mutex.release()
 
-
-            print("Ultrassonic: %f" %(sensorDist))
-
             if (int(receivedList[5]) <= 20) and (int(receivedList[6]) <= 20) and (int(receivedList[7]) > 20):  #goes backwards
                 Err = (SPL-lsensor)         #calculating error from system
                 ErrL = (abs(Err))
