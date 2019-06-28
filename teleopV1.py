@@ -5,9 +5,12 @@ import threading
 from threading import Lock
 from RPi import GPIO
 import numpy as np
+import UltrassonicClass as us
 
 dcMotorLeft = MotorDC(22, 16, 18, 100)   #Motor DC Esquerda (A, B, PWM, pwmPower)
 dcMotorRight = MotorDC(11, 40, 15, 100)  #Motor DC Direita  (A, B, PWM, PwmPower)
+
+ultraSensor = us.Ultrassonic(32, 29, 1)  #Ultrasonic sensor
 
 speedLimit = 10
 
@@ -21,21 +24,19 @@ port = 5151             #Port to receive from data-glove
 s.bind((host, port))    #binding the host and port to socket
 
 
-mutex = Lock()
+mutex = Lock()          #mutex to controll access to
 
-def controlMotor(motorSpeed, dcMotor):
-    #setPoint
-    #dutyCycle
-    i = 95
-    if motorSpeed > speedLimit:
-        i -= 1
-        dcMotor.changeDuty(i)
-
-    if motorSpeed < (speedLimit-1):
-        i += 1
-        dcMotor.changeDuty(i)
-
-    return
+#def controlMotor(motorSpeed, dcMotor):
+#    i = 95
+#    if motorSpeed > speedLimit:
+#        i -= 1
+#        dcMotor.changeDuty(i)
+#
+#    if motorSpeed < (speedLimit-1):
+#        i += 1
+#        dcMotor.changeDuty(i)
+#
+#    return
 
 def calc_velocity(dist_cm, deltaT):
     return (dist_cm / deltaT)
@@ -67,10 +68,10 @@ def calculateDisplacement():
     dispListL = np.zeros([100])
     timeListR = np.zeros([100])
     timeListL = np.zeros([100])
-    speedRightList = np.zeros([100])
-    speedLeftList = np.zeros([100])
-    m_speedRightList = np.zeros([100])
-    m_speedLeftList = np.zeros([100])
+    speedRightList = np.zeros([50])
+    speedLeftList = np.zeros([50])
+    m_speedRightList = np.zeros([50])
+    m_speedLeftList = np.zeros([50])
     dispRNow = 0
     dispLNow = 0
     sampling_time = 0.001
@@ -108,7 +109,7 @@ def calculateDisplacement():
             velR = velR/10
             speedRightList = np.append(speedRightList,velR)
 
-            sub = speedRightList[-100:-1]
+            sub = speedRightList[-50:-1]
             mR = np.mean(sub, dtype=np.float32)
             m_speedRightList = np.append(m_speedRightList,mR)
 
@@ -130,7 +131,7 @@ def calculateDisplacement():
             velL = velL/10
             speedLeftList = np.append(speedLeftList,velL)
 
-            sub = speedLeftList[-100:-1]
+            sub = speedLeftList[-50:-1]
             mL = np.mean(sub, dtype=np.float32)
             m_speedLeftList = np.append(m_speedLeftList,mL)
 
@@ -173,18 +174,18 @@ if __name__ == '__main__':
     try:
         DCR = 0
         DCL = 0
-        SPL = 12
-        SPR = 12
+        SPL = 15
+        SPR = 15
 
         Kp = 0.1
         while True:
-            msg, client = s.recvfrom(1024)              #my interest is the sixth, seventh and eigth value from msg (indicator, middle and ring fincgers)
+            msg, client = s.recvfrom(1024)              #Vlues of interest are sixth, seventh and eigth value from msg (indicator, middle and ring fincgers)
             msg = str(msg)
             msgF = msg[2::]
             receivedList = msgF.split(":")               #List to receive values from msg string
 
             mutex.acquire()
-            lsensor = LS
+            lsensor = LS                                 #access
             rsensor = RS
             mutex.release()
 
@@ -214,7 +215,6 @@ if __name__ == '__main__':
 
                 dcMotorLeft.moveBackwards(DCL)
                 dcMotorRight.moveBackwards(DCR)
-                #sleep(0.001)
 
             elif (int(receivedList[5]) > 20) and (int(receivedList[6]) > 20) and (int(receivedList[7]) > 20):  #goes forward
                 Err = (SPL - lsensor)
@@ -243,7 +243,6 @@ if __name__ == '__main__':
                 dcMotorLeft.moveForward(DCL)
                 dcMotorRight.moveForward(DCR)
 
-                #sleep(0.001)
 
             elif (int(receivedList[5]) <= 20) and (int(receivedList[6]) > 20) and (int(receivedList[7]) > 20):  #goes left
                 Err = (SPL - lsensor)
@@ -271,7 +270,6 @@ if __name__ == '__main__':
 
                 dcMotorLeft.moveForward(DCL)
                 dcMotorRight.moveBackwards(DCR)
-                #sleep(0.001)
 
             elif (int(receivedList[5]) > 20) and (int(receivedList[6]) <= 20) and (int(receivedList[7]) <= 20):  #goes right
                 Err = (SPL - lsensor)
@@ -299,17 +297,15 @@ if __name__ == '__main__':
 
                 dcMotorLeft.moveBackwards(DCL)
                 dcMotorRight.moveForward(DCR)
-                #sleep(0.001)
 
-            else:
-                #stops
+            else:               #stops
                 DCL = 0
                 DCR = 0
                 dcMotorLeft.stop()
                 dcMotorRight.stop()
-                #time.sleep(0.001)
 
             print (lsensor, rsensor, DCL,DCR)
+            sleep(0.01)
 
 
     except KeyboardInterrupt:

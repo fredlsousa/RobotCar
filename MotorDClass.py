@@ -4,7 +4,6 @@ from time import sleep
 
 class MotorDC():
     def __init__(self, pinA, pinB, pinPWM, frequency):
-
         self.pinA = pinA
         self.pinB = pinB
         self.pinPWM = pinPWM

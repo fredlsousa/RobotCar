@@ -3,11 +3,12 @@ import time
 
 
 class Ultrassonic():
-    def __init__(self, Trigger, Echo, Flag):
+    def __init__(self, Trigger, Echo, index):
         # Trigger and Echo are int values from the pin used in the raspberry
+        # Index is the sensor index for a case of more than one sensor being used
         self.Trigger = Trigger
         self.Echo = Echo
-        self.Flag = Flag
+        self.index = index
         self.distanceValue = 0
         # GPIO Mode (BOARD / BCM)
         GPIO.setmode(GPIO.BOARD)
@@ -50,4 +51,4 @@ class Ultrassonic():
         return self.distanceValue
 
     def showDistance(self):
-        print ("#%s - Distancia em cm: %.1f " % (self.Flag, self.getDistance()))
+        print ("#%s - Distance in cm: %.1f " % (self.index, self.getDistance()))
