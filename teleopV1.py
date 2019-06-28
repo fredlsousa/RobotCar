@@ -26,17 +26,6 @@ s.bind((host, port))    #binding the host and port to socket
 
 mutex = Lock()          #mutex to controll access to
 
-#def controlMotor(motorSpeed, dcMotor):
-#    i = 95
-#    if motorSpeed > speedLimit:
-#        i -= 1
-#        dcMotor.changeDuty(i)
-#
-#    if motorSpeed < (speedLimit-1):
-#        i += 1
-#        dcMotor.changeDuty(i)
-#
-#    return
 
 def calc_velocity(dist_cm, deltaT):
     return (dist_cm / deltaT)
@@ -61,7 +50,7 @@ def calculateDisplacement():
     RightSpin = 0
     LeftSpin = 0
     pi = 3.14159265
-    radius = 6.65 / 2  # 3.15 other tires - 6.3 diameter
+    radius = 6.65 / 2
     ppi = 20 / (2 * (pi * radius))
 
     dispListR = np.zeros([100])
@@ -153,7 +142,7 @@ def calculateDisplacement():
             mutex.acquire()
             RD = dispRNow
             LD = dispLNow
-            RS = mR               #mudar dado para thread mr e ml condizem aos dados de media movel
+            RS = mR
             LS = mL
             mutex.release()
 
@@ -166,7 +155,7 @@ def calculateDisplacement():
 
 
 th1 = threading.Thread(target = calculateDisplacement, name = 'thread1', args = ())
-th1.start()             #th1.join() blocks the python interpreter to continue in the main program, and olny gets back when the thread is completed
+th1.start()
 
 data = None
 
