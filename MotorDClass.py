@@ -1,7 +1,6 @@
 import RPi.GPIO as GPIO
 from time import sleep
 
-
 class MotorDC():
     def __init__(self, pinA, pinB, pinPWM, frequency):
         self.pinA = pinA
@@ -14,6 +13,7 @@ class MotorDC():
         self.frequency = frequency
         self.pwm = GPIO.PWM(self.pinPWM, self.frequency)
         self.pwm.start(0)
+
 
     def moveForward(self, dutyCycle):
         GPIO.output(self.pinA, True)

@@ -7,12 +7,11 @@ from RPi import GPIO
 import numpy as np
 import UltrassonicClass as us
 
+
 dcMotorLeft = MotorDC(22, 16, 18, 100)   #Motor DC Esquerda (A, B, PWM, pwmPower)
 dcMotorRight = MotorDC(11, 40, 15, 100)  #Motor DC Direita  (A, B, PWM, PwmPower)
 
-ultraSensor = us.Ultrassonic(32, 29, 1)  #Ultrasonic sensor
-
-speedLimit = 10
+ultraSensor = us.Ultrassonic(29, 32, 1)  #Ultrasonic sensor
 
 s = socket(AF_INET, SOCK_DGRAM)
 
@@ -25,6 +24,13 @@ s.bind((host, port))    #binding the host and port to socket
 
 
 mutex = Lock()          #mutex to controll access to
+
+
+LS = 0
+RS = 0
+RD = 0
+LD = 0
+distance = 0
 
 
 def calc_velocity(dist_cm, deltaT):
@@ -68,89 +74,69 @@ def calculateDisplacement():
     global RD
     global LS
     global LD
+    global distance
 
-    try:
-        elapsed_time = 0
-        ltime = time.perf_counter()
-        print("GO")
-        while True:
-            atime = time.perf_counter()
-            deltaT = atime - ltime
-            elapsed_time += deltaT
-            clkStateR = GPIO.input(clkR)
-            clkStateL = GPIO.input(clkL)
-            dtStateR = GPIO.input(dtR)
-            dtStateL = GPIO.input(dtL)
-            if clkStateR != clkLastStateR:
-                if dtStateR != clkStateR:
-                    counterR -= 1
+    elapsed_time = 0
+    ltime = time.perf_counter()
+    print("GO")
+    while True:
+        atime = time.perf_counter()
+        deltaT = atime - ltime
+        elapsed_time += deltaT
+        clkStateR = GPIO.input(clkR)
+        clkStateL = GPIO.input(clkL)
+        dtStateR = GPIO.input(dtR)
+        dtStateL = GPIO.input(dtL)
+        if clkStateR != clkLastStateR:
+            if dtStateR != clkStateR:
+                counterR -= 1
+            else:
+                counterR += 1
+        dispRNow = (counterR / 2) / ppi
+        dispListR = np.append(dispListR,dispRNow)
+        timeListR = np.append(timeListR,elapsed_time)
+        deltaR = (dispListR[-1] - dispListR[-2])
+        velR = calc_velocity(deltaR, sampling_time)
+        velR = velR/10
+        speedRightList = np.append(speedRightList,velR)
+        sub = speedRightList[-50:-1]
+        mR = np.mean(sub, dtype=np.float32)
+        m_speedRightList = np.append(m_speedRightList,mR)
+        clkLastStateR = clkStateR
+        if clkStateL != clkLastStateL:
+            if dtStateL != clkStateL:
+                counterL += 1
+            else:
+                counterL -= 1
+        dispLNow = (counterL / 2) / ppi
+        dispListL = np.append(dispListL, dispLNow)
+        timeListL = np.append(timeListL, elapsed_time)
+        deltaL = (dispListL[-1] - dispListL[-2])
+        velL = calc_velocity(deltaL, sampling_time)
+        velL = velL/10
+        speedLeftList = np.append(speedLeftList,velL)
+        sub = speedLeftList[-50:-1]
+        mL = np.mean(sub, dtype=np.float32)
+        m_speedLeftList = np.append(m_speedLeftList,mL)
+        clkLastStateL = clkStateL
+        ltime = atime
+        sleep(sampling_time)
+        if mR < 0:
+            mR = mR * -1
+        if mL < 0:
+            mL = mL * -1
+        ultraDs = ultraSensor.getDistance()
+        #print("%f:%f" % (mR, mL))
+        file.write("%f:%f:%f:%f:%f\n" % (dispRNow, dispLNow, mR, mL, ultraDs))
 
-                else:
-                    counterR += 1
-
-
-            dispRNow = (counterR / 2) / ppi
-            dispListR = np.append(dispListR,dispRNow)
-            timeListR = np.append(timeListR,elapsed_time)
-
-            deltaR = (dispListR[-1] - dispListR[-2])
-            velR = calc_velocity(deltaR, sampling_time)
-            velR = velR/10
-            speedRightList = np.append(speedRightList,velR)
-
-            sub = speedRightList[-50:-1]
-            mR = np.mean(sub, dtype=np.float32)
-            m_speedRightList = np.append(m_speedRightList,mR)
-
-            clkLastStateR = clkStateR
-
-            if clkStateL != clkLastStateL:
-                if dtStateL != clkStateL:
-                    counterL += 1
-
-                else:
-                    counterL -= 1
-
-            dispLNow = (counterL / 2) / ppi
-            dispListL = np.append(dispListL, dispLNow)
-            timeListL = np.append(timeListL, elapsed_time)
-
-            deltaL = (dispListL[-1] - dispListL[-2])
-            velL = calc_velocity(deltaL, sampling_time)
-            velL = velL/10
-            speedLeftList = np.append(speedLeftList,velL)
-
-            sub = speedLeftList[-50:-1]
-            mL = np.mean(sub, dtype=np.float32)
-            m_speedLeftList = np.append(m_speedLeftList,mL)
-
-
-            clkLastStateL = clkStateL
-            ltime = atime
-            sleep(sampling_time)
-
-
-            if mR < 0:
-                mR = mR * -1
-
-            if mL < 0:
-                mL = mL * -1
-
-            #print("%f:%f" % (mR, mL))
-            file.write("%f:%f:%f:%f\n" % (dispRNow, dispLNow, mR, mL))
-
-            mutex.acquire()
-            RD = dispRNow
-            LD = dispLNow
-            RS = mR
-            LS = mL
-            mutex.release()
-
-            sleep(0.005)
-
-    except KeyboardInterrupt:
-        GPIO.cleanup()
-        print ("Stopped")
+        mutex.acquire()
+        RD = dispRNow
+        LD = dispLNow
+        RS = mR
+        LS = mL
+        distance = ultraDs
+        mutex.release()
+        sleep(0.005)
 
 
 
@@ -161,10 +147,11 @@ data = None
 
 if __name__ == '__main__':
     try:
-        DCR = 0
-        DCL = 0
-        SPL = 15
-        SPR = 15
+        DCR = 0             #DutyCycle to be set to each wheel (right motor)
+        DCL = 0             #DutyCycle to be set to each wheel (left motor)
+        SPL = 15            #setPoint to speed of the left motor, 15 cm/s - the speed limit of the left wheel control
+        SPR = 15            #setPoint to speed of the right motor, 15 cm/s - the speed limit of the rigt wheel control
+        SPDist = 15         #setPoint of distance from a obstacle
 
         Kp = 0.1
         while True:
@@ -174,17 +161,21 @@ if __name__ == '__main__':
             receivedList = msgF.split(":")               #List to receive values from msg string
 
             mutex.acquire()
-            lsensor = LS                                 #access
+            lsensor = LS                                 #access to critic region (the thread data)
             rsensor = RS
+            sensorDist = distance
             mutex.release()
 
+
+            print("Ultrassonic: %f" %(sensorDist))
+
             if (int(receivedList[5]) <= 20) and (int(receivedList[6]) <= 20) and (int(receivedList[7]) > 20):  #goes backwards
-                Err = (SPL-lsensor)
+                Err = (SPL-lsensor)         #calculating error from system
                 ErrL = (abs(Err))
                 Err = (SPR - rsensor)
                 ErrR = (abs(Err))
 
-                if (lsensor < SPL and DCL <= 98):
+                if (lsensor < SPL and DCL <= 98):       #define the increments of dutycycle by kp*error
                     DCL += Kp*ErrL
                 if (rsensor < SPR and DCR <= 98):
                     DCR += Kp*ErrR
@@ -300,4 +291,6 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         print("Stopped")
         GPIO.cleanup()
+        file.close()
         s.close()
+
