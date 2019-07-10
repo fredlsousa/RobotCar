@@ -14,6 +14,8 @@ dcMotorRight = MotorDC(11, 40, 15, 100)  #Motor DC Direita  (A, B, PWM, PwmPower
 ultraSensor = us.Ultrassonic(29, 32, 1)  #Ultrasonic sensor
 
 s = socket(AF_INET, SOCK_DGRAM)
+#s.settimeout(0.5)
+
 
 file = open("log.txt", "a+")
 
@@ -24,13 +26,22 @@ s.bind((host, port))    #binding the host and port to socket
 
 
 mutex = Lock()          #mutex to controll access to
-
+mutex2 = Lock()
 
 LS = 0
 RS = 0
 RD = 0
 LD = 0
 distance = 0
+
+def sensorDistance():
+    global distance
+    while True:
+        d = ultraSensor.getDistance()
+        mutex2.acquire()
+        distance = d
+        mutex2.release()
+        sleep(0.5)
 
 
 def calc_velocity(dist_cm, deltaT):
@@ -74,7 +85,6 @@ def calculateDisplacement():
     global RD
     global LS
     global LD
-    global distance
 
     elapsed_time = 0
     ltime = time.perf_counter()
@@ -125,165 +135,193 @@ def calculateDisplacement():
             mR = mR * -1
         if mL < 0:
             mL = mL * -1
-        ultraDs = ultraSensor.getDistance()
-        #print("%f:%f" % (mR, mL))
-        file.write("%f:%f:%f:%f:%f\n" % (dispRNow, dispLNow, mR, mL, ultraDs))
 
         mutex.acquire()
         RD = dispRNow
         LD = dispLNow
         RS = mR
         LS = mL
-        distance = ultraDs
         mutex.release()
         sleep(0.005)
 
 
 
 th1 = threading.Thread(target = calculateDisplacement, name = 'thread1', args = ())
+ultraThread = threading.Thread(target = sensorDistance, name = 'thread2', args = ())
 th1.start()
+ultraThread.start()
+
 
 data = None
 
 if __name__ == '__main__':
     try:
+        msg = str()
         DCR = 0             #DutyCycle to be set to each wheel (right motor)
         DCL = 0             #DutyCycle to be set to each wheel (left motor)
-        SPL = 15            #setPoint to speed of the left motor, 15 cm/s - the speed limit of the left wheel control
-        SPR = 15            #setPoint to speed of the right motor, 15 cm/s - the speed limit of the rigt wheel control
+        SPL = 8            #setPoint to speed of the left motor, 15 cm/s - the speed limit of the left wheel control
+        SPR = 8            #setPoint to speed of the right motor, 15 cm/s - the speed limit of the rigt wheel control
         SPDist = 15         #setPoint of distance from a obstacle
 
         Kp = 0.1
+
         while True:
-            msg, client = s.recvfrom(1024)              #Vlues of interest are sixth, seventh and eigth value from msg (indicator, middle and ring fincgers)
-            msg = str(msg)
-            msgF = msg[2::]
-            receivedList = msgF.split(":")               #List to receive values from msg string
 
-            mutex.acquire()
-            lsensor = LS                                 #access to critic region (the thread data)
-            rsensor = RS
-            sensorDist = distance
-            mutex.release()
+            try:
+                msg, client = s.recvfrom(64)              #Vlues of interest are sixth, seventh and eigth value from msg (indicator, middle and ring fincgers)
+                #msg = str(msg)
+                print(client)
+                msg = msg.decode()
+            except Exception as e:
+                print (e)
+                pass
 
-            if (int(receivedList[5]) <= 20) and (int(receivedList[6]) <= 20) and (int(receivedList[7]) > 20):  #goes backwards
-                Err = (SPL-lsensor)         #calculating error from system
-                ErrL = (abs(Err))
-                Err = (SPR - rsensor)
-                ErrR = (abs(Err))
+            if msg == "ff":
+                mutex.acquire()
+                msg = str(LS) + ":" + str(RS) + ":" + str(LD) + ":" + str(RD)
+                mutex.release()
+                msg = msg + ":" + str(distance)
+                msg = bytes(msg, encoding='utf8')
+                s.sendto(msg, client)
 
-                if (lsensor < SPL and DCL <= 98):       #define the increments of dutycycle by kp*error
-                    DCL += Kp*ErrL
-                if (rsensor < SPR and DCR <= 98):
-                    DCR += Kp*ErrR
-                if (lsensor > SPL and DCL > 0):
-                    DCL -= Kp*ErrL
-                if (rsensor > SPR and DCR > 0):
-                    DCR -= Kp*ErrR
+            #if msg == "glove":
+            #    mutex2.acquire()
+            #    msg = str(distance)
+            #    mutex2.release()
+            #    msg = bytes(msg, encoding='utf8')
+            #    s.sendto(msg, client)
 
-                if(DCL > 99):
-                    DCL = 99
-                elif DCL < 0:
+            else:
+
+                msgF = msg[2::]
+                receivedList = msgF.split(":")               #List to receive values from msg string
+
+                mutex.acquire()
+                lsensor = LS                                 #access to critic region (the thread data)
+                rsensor = RS
+                mutex.release()
+
+                dist = distance
+
+                if (int(receivedList[5]) <= 20) and (int(receivedList[6]) <= 20) and (int(receivedList[7]) > 20):  #goes backwards
+                    Err = (SPL-lsensor)         #calculating error from system
+                    ErrL = (abs(Err))
+                    Err = (SPR - rsensor)
+                    ErrR = (abs(Err))
+
+                    if (lsensor < SPL and DCL <= 98):       #define the increments of dutycycle by kp*error
+                        DCL += Kp*ErrL
+                    if (rsensor < SPR and DCR <= 98):
+                        DCR += Kp*ErrR
+                    if (lsensor > SPL and DCL > 0):
+                        DCL -= Kp*ErrL
+                    if (rsensor > SPR and DCR > 0):
+                        DCR -= Kp*ErrR
+
+                    if(DCL > 99):
+                        DCL = 99
+                    elif DCL < 0:
+                        DCL = 0
+                    if (DCR > 99):
+                        DCR = 99
+                    elif DCR < 0:
+                        DCR = 0
+
+                    dcMotorLeft.moveBackwards(DCL)
+                    dcMotorRight.moveBackwards(DCR)
+
+                elif (int(receivedList[5]) > 20) and (int(receivedList[6]) > 20) and (int(receivedList[7]) > 20):  #goes forward
+                    Err = (SPL - lsensor)
+                    ErrL = (abs(Err))
+                    Err = (SPR - rsensor)
+                    ErrR = (abs(Err))
+
+                    if (lsensor < SPL and DCL <= 98):
+                        DCL += Kp * ErrL
+                    if (rsensor < SPR and DCR <= 98):
+                        DCR += Kp * ErrR
+                    if (lsensor > SPL and DCL > 0):
+                        DCL -= Kp * ErrL
+                    if (rsensor > SPR and DCR > 0):
+                        DCR -= Kp * ErrR
+
+                    if (DCL > 99):
+                        DCL = 99
+                    elif DCL < 0:
+                        DCL = 0
+                    if (DCR > 99):
+                        DCR = 99
+                    elif DCR < 0:
+                        DCR = 0
+
+                    dcMotorLeft.moveForward(DCL)
+                    dcMotorRight.moveForward(DCR)
+
+
+                elif (int(receivedList[5]) <= 20) and (int(receivedList[6]) > 20) and (int(receivedList[7]) > 20):  #goes left
+                    Err = (SPL - lsensor)
+                    ErrL = (abs(Err))
+                    Err = (SPR - rsensor)
+                    ErrR = (abs(Err))
+
+                    if (lsensor < SPL and DCL <= 98):
+                        DCL += Kp * ErrL
+                    if (rsensor < SPR and DCR <= 98):
+                        DCR += Kp * ErrR
+                    if (lsensor > SPL and DCL > 0):
+                        DCL -= Kp * ErrL
+                    if (rsensor > SPR and DCR > 0):
+                        DCR -= Kp * ErrR
+
+                    if (DCL > 99):
+                        DCL = 99
+                    elif DCL < 0:
+                        DCL = 0
+                    if (DCR > 99):
+                        DCR = 99
+                    elif DCR < 0:
+                        DCR = 0
+
+                    dcMotorLeft.moveForward(DCL)
+                    dcMotorRight.moveBackwards(DCR)
+
+                elif (int(receivedList[5]) > 20) and (int(receivedList[6]) <= 20) and (int(receivedList[7]) <= 20):  #goes right
+                    Err = (SPL - lsensor)
+                    ErrL = (abs(Err))
+                    Err = (SPR - rsensor)
+                    ErrR = (abs(Err))
+
+                    if (lsensor < SPL and DCL <= 98):
+                        DCL += Kp * ErrL
+                    if (rsensor < SPR and DCR <= 98):
+                        DCR += Kp * ErrR
+                    if (lsensor > SPL and DCL > 0):
+                        DCL -= Kp * ErrL
+                    if (rsensor > SPR and DCR > 0):
+                        DCR -= Kp * ErrR
+
+                    if (DCL > 99):
+                        DCL = 99
+                    elif DCL < 0:
+                        DCL = 0
+                    if (DCR > 99):
+                        DCR = 99
+                    elif DCR < 0:
+                        DCR = 0
+
+                    dcMotorLeft.moveBackwards(DCL)
+                    dcMotorRight.moveForward(DCR)
+
+
+                else:               #stops
                     DCL = 0
-                if (DCR > 99):
-                    DCR = 99
-                elif DCR < 0:
                     DCR = 0
-
-                dcMotorLeft.moveBackwards(DCL)
-                dcMotorRight.moveBackwards(DCR)
-
-            elif (int(receivedList[5]) > 20) and (int(receivedList[6]) > 20) and (int(receivedList[7]) > 20):  #goes forward
-                Err = (SPL - lsensor)
-                ErrL = (abs(Err))
-                Err = (SPR - rsensor)
-                ErrR = (abs(Err))
-
-                if (lsensor < SPL and DCL <= 98):
-                    DCL += Kp * ErrL
-                if (rsensor < SPR and DCR <= 98):
-                    DCR += Kp * ErrR
-                if (lsensor > SPL and DCL > 0):
-                    DCL -= Kp * ErrL
-                if (rsensor > SPR and DCR > 0):
-                    DCR -= Kp * ErrR
-
-                if (DCL > 99):
-                    DCL = 99
-                elif DCL < 0:
-                    DCL = 0
-                if (DCR > 99):
-                    DCR = 99
-                elif DCR < 0:
-                    DCR = 0
-
-                dcMotorLeft.moveForward(DCL)
-                dcMotorRight.moveForward(DCR)
+                    dcMotorLeft.stop()
+                    dcMotorRight.stop()
 
 
-            elif (int(receivedList[5]) <= 20) and (int(receivedList[6]) > 20) and (int(receivedList[7]) > 20):  #goes left
-                Err = (SPL - lsensor)
-                ErrL = (abs(Err))
-                Err = (SPR - rsensor)
-                ErrR = (abs(Err))
-
-                if (lsensor < SPL and DCL <= 98):
-                    DCL += Kp * ErrL
-                if (rsensor < SPR and DCR <= 98):
-                    DCR += Kp * ErrR
-                if (lsensor > SPL and DCL > 0):
-                    DCL -= Kp * ErrL
-                if (rsensor > SPR and DCR > 0):
-                    DCR -= Kp * ErrR
-
-                if (DCL > 99):
-                    DCL = 99
-                elif DCL < 0:
-                    DCL = 0
-                if (DCR > 99):
-                    DCR = 99
-                elif DCR < 0:
-                    DCR = 0
-
-                dcMotorLeft.moveForward(DCL)
-                dcMotorRight.moveBackwards(DCR)
-
-            elif (int(receivedList[5]) > 20) and (int(receivedList[6]) <= 20) and (int(receivedList[7]) <= 20):  #goes right
-                Err = (SPL - lsensor)
-                ErrL = (abs(Err))
-                Err = (SPR - rsensor)
-                ErrR = (abs(Err))
-
-                if (lsensor < SPL and DCL <= 98):
-                    DCL += Kp * ErrL
-                if (rsensor < SPR and DCR <= 98):
-                    DCR += Kp * ErrR
-                if (lsensor > SPL and DCL > 0):
-                    DCL -= Kp * ErrL
-                if (rsensor > SPR and DCR > 0):
-                    DCR -= Kp * ErrR
-
-                if (DCL > 99):
-                    DCL = 99
-                elif DCL < 0:
-                    DCL = 0
-                if (DCR > 99):
-                    DCR = 99
-                elif DCR < 0:
-                    DCR = 0
-
-                dcMotorLeft.moveBackwards(DCL)
-                dcMotorRight.moveForward(DCR)
-
-            else:               #stops
-                DCL = 0
-                DCR = 0
-                dcMotorLeft.stop()
-                dcMotorRight.stop()
-
-            print (lsensor, rsensor, DCL, DCR, sensorDist)
-            sleep(0.01)
-
+                print (lsensor, rsensor, DCL, DCR, dist)
+                sleep(0.01)
 
     except KeyboardInterrupt:
         print("Stopped")

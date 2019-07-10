@@ -14,7 +14,6 @@ class MotorDC():
         self.pwm = GPIO.PWM(self.pinPWM, self.frequency)
         self.pwm.start(0)
 
-
     def moveForward(self, dutyCycle):
         GPIO.output(self.pinA, True)
         GPIO.output(self.pinB, False)
