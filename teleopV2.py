@@ -22,7 +22,7 @@ file = open("log.txt", "a+")
 host = "192.168.0.159"    #Server to receive from data-glove
 port = 5151             #Port to receive from data-glove
 
-hostTwin = "192.168.0.193"
+hostTwin = "192.168.0.179"
 portTwin = 6060
 
 s.bind((host, port))    #binding the host and port to socket
@@ -227,7 +227,7 @@ if __name__ == '__main__':
                 dcMotorLeft.moveBackwards(DCL)
                 dcMotorRight.moveBackwards(DCR)
 
-            elif (int(receivedList[5]) > 20) and (int(receivedList[6]) > 20) and (int(receivedList[7]) > 20):  #goes forward
+            elif (int(receivedList[5]) > 20) and (int(receivedList[6]) > 20) and (int(receivedList[7]) > 20) and (distance > 20):  #goes forward
                 Err = (SPL - lsensor)
                 ErrL = (abs(Err))
                 Err = (SPR - rsensor)

@@ -1,6 +1,7 @@
 import RPi.GPIO as GPIO
 import time
 
+
 class Ultrassonic():
     def __init__(self, Trigger, Echo, index):
         # Trigger and Echo are int values from the pin used in the raspberry
